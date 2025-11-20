@@ -1,0 +1,36 @@
+RewriteEngine On
+
+# Redireciona requisições API - corrigido para evitar duplicação
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/index.php [L,QSA]
+
+# Serve o index.php para a raiz
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ index.php [L]
+
+# Para SPA - redireciona todas as outras rotas para o index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(?!api/).*$ index.php [L]
+
+# Headers de segurança
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Previne listagem de diretórios
+Options -Indexes
+
+# Configurações PHP
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value display_errors On
+    php_value log_errors On
+</IfModule>

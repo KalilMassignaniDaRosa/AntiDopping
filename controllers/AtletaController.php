@@ -19,15 +19,15 @@ class AtletaController
             $atletas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                'success' => true,
-                'data' => $atletas,
+                'sucesso' => true,
+                'dados' => $atletas,
                 'total' => count($atletas)
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao listar atletas: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao listar atletas: ' . $e->getMessage()
             ]);
         }
     }
@@ -39,15 +39,15 @@ class AtletaController
             $atletas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                'success' => true,
-                'data' => $atletas,
+                'sucesso' => true,
+                'dados' => $atletas,
                 'total' => count($atletas)
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao listar atletas por status: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao listar atletas por status: ' . $e->getMessage()
             ]);
         }
     }
@@ -56,16 +56,16 @@ class AtletaController
     {
         try {
             // Obter dados da requisição
-            $input = json_decode(file_get_contents('php://input'), true);
-            if (!$input && !empty($_POST)) {
-                $input = $_POST;
+            $entrada = json_decode(file_get_contents('php://input'), true);
+            if (!$entrada && !empty($_POST)) {
+                $entrada = $_POST;
             }
 
-            if (!$input) {
+            if (!$entrada) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Nenhum dado recebido'
+                    'sucesso' => false,
+                    'mensagem' => 'Nenhum dado recebido'
                 ]);
                 return;
             }
@@ -74,7 +74,7 @@ class AtletaController
             $camposFaltantes = [];
 
             foreach ($camposObrigatorios as $campo) {
-                if (empty($input[$campo])) {
+                if (empty($entrada[$campo])) {
                     $camposFaltantes[] = $campo;
                 }
             }
@@ -82,63 +82,62 @@ class AtletaController
             if (!empty($camposFaltantes)) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Dados obrigatórios não informados: ' . implode(', ', $camposFaltantes)
+                    'sucesso' => false,
+                    'mensagem' => 'Dados obrigatórios não informados: ' . implode(', ', $camposFaltantes)
                 ]);
                 return;
             }
 
             // Limpar e formatar CPF
-            $cpf_limpo = preg_replace('/\D/', '', $input['cpf']);
+            $cpf_limpo = preg_replace('/\D/', '', $entrada['cpf']);
 
-            if (!$this->validarCPF($cpf_limpo, false)) { // false = modo flexível
+            if (!$this->validarCPF($cpf_limpo, false)) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'CPF inválido: ' . $input['cpf']
+                    'sucesso' => false,
+                    'mensagem' => 'CPF inválido: ' . $entrada['cpf']
                 ]);
                 return;
             }
-
 
             // Verificar se CPF já existe
             $cpfExistente = $this->atleta->buscarPorCpf($cpf_limpo);
             if ($cpfExistente) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'CPF já cadastrado'
+                    'sucesso' => false,
+                    'mensagem' => 'CPF já cadastrado'
                 ]);
                 return;
             }
 
             // Atribuir valores
-            $this->atleta->nome = htmlspecialchars(strip_tags($input['nome']));
-            $this->atleta->cpf = $cpf_limpo; // Usar CPF limpo
-            $this->atleta->data_nascimento = $input['data_nascimento'];
-            $this->atleta->clube_id = $input['clube_id'];
-            $this->atleta->posicao = htmlspecialchars(strip_tags($input['posicao']));
-            $this->atleta->status = $input['status'] ?? 'ativo';
-            $this->atleta->observacoes = $input['observacoes'] ?? null;
+            $this->atleta->nome = htmlspecialchars(strip_tags($entrada['nome']));
+            $this->atleta->cpf = $cpf_limpo;
+            $this->atleta->data_nascimento = $entrada['data_nascimento'];
+            $this->atleta->clube_id = $entrada['clube_id'];
+            $this->atleta->posicao = htmlspecialchars(strip_tags($entrada['posicao']));
+            $this->atleta->status = $entrada['status'] ?? 'ativo';
+            $this->atleta->observacoes = $entrada['observacoes'] ?? null;
 
             if ($this->atleta->criar()) {
                 echo json_encode([
-                    'success' => true,
-                    'message' => 'Atleta cadastrado com sucesso',
+                    'sucesso' => true,
+                    'mensagem' => 'Atleta cadastrado com sucesso',
                     'id' => $this->atleta->id
                 ]);
             } else {
                 http_response_code(500);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Erro ao cadastrar atleta'
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao cadastrar atleta'
                 ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao processar requisição: ' . $e->getMessage(),
+                'sucesso' => false,
+                'mensagem' => 'Erro ao processar requisição: ' . $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
         }
@@ -151,21 +150,21 @@ class AtletaController
 
             if ($atleta) {
                 echo json_encode([
-                    'success' => true,
-                    'data' => $atleta
+                    'sucesso' => true,
+                    'dados' => $atleta
                 ]);
             } else {
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Atleta não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Atleta não encontrado'
                 ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao buscar atleta'
+                'sucesso' => false,
+                'mensagem' => 'Erro ao buscar atleta'
             ]);
         }
     }
@@ -173,20 +172,20 @@ class AtletaController
     public function atualizar($id)
     {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
+            $entrada = json_decode(file_get_contents('php://input'), true);
 
-            if (!$input) {
+            if (!$entrada) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Nenhum dado recebido para atualização'
+                    'sucesso' => false,
+                    'mensagem' => 'Nenhum dado recebido para atualização'
                 ]);
                 return;
             }
 
             error_log("=== TENTANDO ATUALIZAR ATLETA ===");
             error_log("ID: " . $id);
-            error_log("Dados recebidos: " . print_r($input, true));
+            error_log("Dados recebidos: " . print_r($entrada, true));
 
             // Buscar atleta existente
             $atletaExistente = $this->atleta->buscarPorId($id);
@@ -194,8 +193,8 @@ class AtletaController
                 error_log("Atleta não encontrado com ID: " . $id);
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Atleta não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Atleta não encontrado'
                 ]);
                 return;
             }
@@ -205,17 +204,17 @@ class AtletaController
             // Preparar dados para atualização
             $dadosAtualizacao = [
                 'id' => $id,
-                'nome' => isset($input['nome']) ? $input['nome'] : $atletaExistente['nome'],
-                'data_nascimento' => isset($input['data_nascimento']) ? $input['data_nascimento'] : $atletaExistente['data_nascimento'],
-                'clube_id' => isset($input['clube_id']) ? $input['clube_id'] : $atletaExistente['clube_id'],
-                'posicao' => isset($input['posicao']) ? $input['posicao'] : $atletaExistente['posicao'],
-                'status' => isset($input['status']) ? $input['status'] : $atletaExistente['status'],
-                'observacoes' => isset($input['observacoes']) ? $input['observacoes'] : $atletaExistente['observacoes']
+                'nome' => isset($entrada['nome']) ? $entrada['nome'] : $atletaExistente['nome'],
+                'data_nascimento' => isset($entrada['data_nascimento']) ? $entrada['data_nascimento'] : $atletaExistente['data_nascimento'],
+                'clube_id' => isset($entrada['clube_id']) ? $entrada['clube_id'] : $atletaExistente['clube_id'],
+                'posicao' => isset($entrada['posicao']) ? $entrada['posicao'] : $atletaExistente['posicao'],
+                'status' => isset($entrada['status']) ? $entrada['status'] : $atletaExistente['status'],
+                'observacoes' => isset($entrada['observacoes']) ? $entrada['observacoes'] : $atletaExistente['observacoes']
             ];
 
             // Tratamento do CPF
-            if (isset($input['cpf']) && !empty($input['cpf'])) {
-                $cpf_limpo = preg_replace('/[^0-9]/', '', $input['cpf']);
+            if (isset($entrada['cpf']) && !empty($entrada['cpf'])) {
+                $cpf_limpo = preg_replace('/[^0-9]/', '', $entrada['cpf']);
 
                 // CPF existente no DB (limpo) — limpa também o que veio do banco
                 $cpf_existente_no_db = preg_replace('/[^0-9]/', '', $atletaExistente['cpf']);
@@ -223,11 +222,11 @@ class AtletaController
                 // APENAS validar se o CPF foi alterado
                 if ($cpf_limpo !== $cpf_existente_no_db) {
                     if (!$this->validarCPF($cpf_limpo)) {
-                        error_log("CPF inválido: " . $input['cpf']);
+                        error_log("CPF inválido: " . $entrada['cpf']);
                         http_response_code(400);
                         echo json_encode([
-                            'success' => false,
-                            'message' => 'CPF inválido. Por favor, informe um CPF válido.'
+                            'sucesso' => false,
+                            'mensagem' => 'CPF inválido. Por favor, informe um CPF válido.'
                         ]);
                         return;
                     }
@@ -238,8 +237,8 @@ class AtletaController
                         error_log("CPF já existe para outro atleta: " . $cpf_limpo);
                         http_response_code(400);
                         echo json_encode([
-                            'success' => false,
-                            'message' => 'CPF já cadastrado para outro atleta'
+                            'sucesso' => false,
+                            'mensagem' => 'CPF já cadastrado para outro atleta'
                         ]);
                         return;
                     }
@@ -251,7 +250,6 @@ class AtletaController
                 // Se não foi enviado CPF, mantém o existente (em formato limpo)
                 $dadosAtualizacao['cpf'] = preg_replace('/[^0-9]/', '', $atletaExistente['cpf']);
             }
-
 
             error_log("Dados finais para atualização: " . print_r($dadosAtualizacao, true));
 
@@ -272,14 +270,14 @@ class AtletaController
 
             if ($resultado) {
                 echo json_encode([
-                    'success' => true,
-                    'message' => 'Atleta atualizado com sucesso'
+                    'sucesso' => true,
+                    'mensagem' => 'Atleta atualizado com sucesso'
                 ]);
             } else {
                 http_response_code(500);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Erro ao atualizar atleta no banco de dados'
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao atualizar atleta no banco de dados'
                 ]);
             }
         } catch (Exception $e) {
@@ -288,8 +286,8 @@ class AtletaController
 
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao processar requisição: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao processar requisição: ' . $e->getMessage()
             ]);
         }
     }
@@ -301,34 +299,34 @@ class AtletaController
             if (!$atletaExistente) {
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Atleta não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Atleta não encontrado'
                 ]);
                 return;
             }
 
             if ($this->atleta->deletar($id)) {
                 echo json_encode([
-                    'success' => true,
-                    'message' => 'Atleta excluído com sucesso'
+                    'sucesso' => true,
+                    'mensagem' => 'Atleta excluído com sucesso'
                 ]);
             } else {
                 http_response_code(500);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Erro ao excluir atleta'
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao excluir atleta'
                 ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao processar requisição: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao processar requisição: ' . $e->getMessage()
             ]);
         }
     }
 
-    private function validarCPF($cpf, $strict = false)
+    private function validarCPF($cpf, $rigoroso = false)
     {
         // Remove tudo que não for dígito
         $cpf = preg_replace('/\D/', '', $cpf);
@@ -338,7 +336,7 @@ class AtletaController
             return false;
         }
 
-        if ($strict) {
+        if ($rigoroso) {
             // Validação clássica (dígitos verificadores)
             for ($t = 9; $t < 11; $t++) {
                 $d = 0;
@@ -355,3 +353,4 @@ class AtletaController
         return true;
     }
 }
+?>

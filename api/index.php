@@ -1,5 +1,5 @@
 <?php
-// Headers CORS
+// Cabeçalhos CORS
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -34,46 +34,46 @@ try {
 } catch(Exception $e) {
     http_response_code(500);
     echo json_encode([
-        'success' => false,
-        'message' => 'Erro de conexão com o banco de dados: ' . $e->getMessage()
+        'sucesso' => false,
+        'mensagem' => 'Erro de conexão com o banco de dados: ' . $e->getMessage()
     ]);
     exit;
 }
 
 // Obter método e URI
-$method = $_SERVER['REQUEST_METHOD'];
-$request_uri = $_SERVER['REQUEST_URI'];
+$metodo = $_SERVER['REQUEST_METHOD'];
+$uri_requisicao = $_SERVER['REQUEST_URI'];
 
 // Parse da URI
-$parsed_url = parse_url($request_uri);
-$path = $parsed_url['path'];
+$url_parseada = parse_url($uri_requisicao);
+$caminho = $url_parseada['path'];
 
 // Extrair a parte da API (remover o prefixo até /api/)
-$base_path = '/AntiDopping/api/';
-$api_path = str_replace($base_path, '', $path);
+$caminho_base = '/AntiDopping/api/';
+$caminho_api = str_replace($caminho_base, '', $caminho);
 
 // Se não encontrou, tenta outro padrão comum
-if ($api_path === $path) {
+if ($caminho_api === $caminho) {
     // Tenta encontrar /api/ em qualquer posição
-    $api_pos = strpos($path, '/api/');
-    if ($api_pos !== false) {
-        $api_path = substr($path, $api_pos + 5); // +5 para pular '/api/'
+    $posicao_api = strpos($caminho, '/api/');
+    if ($posicao_api !== false) {
+        $caminho_api = substr($caminho, $posicao_api + 5); // +5 para pular '/api/'
     }
 }
 
 // Dividir em partes
-$uri_parts = explode('/', trim($api_path, '/'));
+$partes_uri = explode('/', trim($caminho_api, '/'));
 
 // Log para debug
-error_log("API Request: {$method} {$request_uri} -> " . implode('/', $uri_parts));
+error_log("Requisição API: {$metodo} {$uri_requisicao} -> " . implode('/', $partes_uri));
 
 try {
     // ROTA RAIZ DA API
-    if (empty($uri_parts[0]) || $uri_parts[0] === '') {
+    if (empty($partes_uri[0]) || $partes_uri[0] === '') {
         echo json_encode([
-            'success' => true,
-            'message' => 'API CBF Antidoping - Sistema funcionando',
-            'timestamp' => date('Y-m-d H:i:s'),
+            'sucesso' => true,
+            'mensagem' => 'API CBF Antidoping - Sistema funcionando',
+            'data_hora' => date('Y-m-d H:i:s'),
             'endpoints' => [
                 'GET /atletas' => 'Listar todos os atletas',
                 'GET /atletas/{id}' => 'Buscar atleta por ID',
@@ -97,15 +97,15 @@ try {
     }
 
     // ROTAS DE ATLETAS
-    if($uri_parts[0] === 'atletas') {
+    if($partes_uri[0] === 'atletas') {
         $controller = new AtletaController($db);
 
-        switch($method) {
+        switch($metodo) {
             case 'GET':
-                if(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                    $controller->buscar($uri_parts[1]);
-                } elseif(isset($uri_parts[1]) && $uri_parts[1] === 'status' && isset($uri_parts[2])) {
-                    $controller->listarPorStatus($uri_parts[2]);
+                if(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                    $controller->buscar($partes_uri[1]);
+                } elseif(isset($partes_uri[1]) && $partes_uri[1] === 'status' && isset($partes_uri[2])) {
+                    $controller->listarPorStatus($partes_uri[2]);
                 } else {
                     $controller->listar();
                 }
@@ -114,41 +114,41 @@ try {
                 $controller->criar();
                 break;
             case 'PUT':
-                if(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                    $controller->atualizar($uri_parts[1]);
+                if(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                    $controller->atualizar($partes_uri[1]);
                 } else {
                     http_response_code(400);
-                    echo json_encode(['success' => false, 'message' => 'ID do atleta não informado']);
+                    echo json_encode(['sucesso' => false, 'mensagem' => 'ID do atleta não informado']);
                 }
                 break;
             case 'DELETE':
-                if(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                    $controller->deletar($uri_parts[1]);
+                if(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                    $controller->deletar($partes_uri[1]);
                 } else {
                     http_response_code(400);
-                    echo json_encode(['success' => false, 'message' => 'ID do atleta não informado']);
+                    echo json_encode(['sucesso' => false, 'mensagem' => 'ID do atleta não informado']);
                 }
                 break;
             default:
                 http_response_code(405);
-                echo json_encode(['success' => false, 'message' => 'Método não permitido']);
+                echo json_encode(['sucesso' => false, 'mensagem' => 'Método não permitido']);
         }
         exit;
     }
 
     // ROTAS DE TESTES
-    if($uri_parts[0] === 'testes') {
+    if($partes_uri[0] === 'testes') {
         $controller = new TesteController($db);
-        switch($method) {
+        switch($metodo) {
             case 'GET':
-                if(isset($uri_parts[1]) && $uri_parts[1] === 'dashboard') {
+                if(isset($partes_uri[1]) && $partes_uri[1] === 'dashboard') {
                     $controller->dashboard();
-                } elseif(isset($uri_parts[1]) && $uri_parts[1] === 'atleta' && isset($uri_parts[2])) {
-                    $controller->listarPorAtleta($uri_parts[2]);
-                } elseif(isset($uri_parts[1]) && $uri_parts[1] === 'relatorio') {
+                } elseif(isset($partes_uri[1]) && $partes_uri[1] === 'atleta' && isset($partes_uri[2])) {
+                    $controller->listarPorAtleta($partes_uri[2]);
+                } elseif(isset($partes_uri[1]) && $partes_uri[1] === 'relatorio') {
                     $controller->gerarRelatorio();
-                } elseif(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                    $controller->buscar($uri_parts[1]);
+                } elseif(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                    $controller->buscar($partes_uri[1]);
                 } else {
                     $controller->listar();
                 }
@@ -157,44 +157,44 @@ try {
                 $controller->criar();
                 break;
             case 'PUT':
-                if(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                    $controller->atualizar($uri_parts[1]);
+                if(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                    $controller->atualizar($partes_uri[1]);
                 } else {
                     http_response_code(400);
-                    echo json_encode(['success' => false, 'message' => 'ID do teste não informado']);
+                    echo json_encode(['sucesso' => false, 'mensagem' => 'ID do teste não informado']);
                 }
                 break;
             default:
                 http_response_code(405);
-                echo json_encode(['success' => false, 'message' => 'Método não permitido']);
+                echo json_encode(['sucesso' => false, 'mensagem' => 'Método não permitido']);
         }
         exit;
     }
 
     // ROTAS DE CLUBES
-    if($uri_parts[0] === 'clubes') {
+    if($partes_uri[0] === 'clubes') {
         $controller = new ClubeController($db);
-        if($method === 'GET') {
-            if(isset($uri_parts[1]) && is_numeric($uri_parts[1])) {
-                $controller->buscar($uri_parts[1]);
+        if($metodo === 'GET') {
+            if(isset($partes_uri[1]) && is_numeric($partes_uri[1])) {
+                $controller->buscar($partes_uri[1]);
             } else {
                 $controller->listar();
             }
         } else {
             http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Método não permitido']);
         }
         exit;
     }
 
     // ROTAS DE LABORATÓRIOS
-    if($uri_parts[0] === 'laboratorios') {
+    if($partes_uri[0] === 'laboratorios') {
         $controller = new LaboratorioController($db);
-        if($method === 'GET') {
+        if($metodo === 'GET') {
             $controller->listar();
         } else {
             http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Método não permitido']);
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Método não permitido']);
         }
         exit;
     }
@@ -202,18 +202,18 @@ try {
     // Rota não encontrada
     http_response_code(404);
     echo json_encode([
-        'success' => false,
-        'message' => 'Rota não encontrada',
-        'requested' => $uri_parts[0],
-        'available_routes' => ['atletas', 'testes', 'clubes', 'laboratorios']
+        'sucesso' => false,
+        'mensagem' => 'Rota não encontrada',
+        'solicitado' => $partes_uri[0],
+        'rotas_disponiveis' => ['atletas', 'testes', 'clubes', 'laboratorios']
     ]);
 
 } catch(Exception $e) {
     http_response_code(500);
     echo json_encode([
-        'success' => false,
-        'message' => 'Erro interno do servidor',
-        'error' => $e->getMessage()
+        'sucesso' => false,
+        'mensagem' => 'Erro interno do servidor',
+        'erro' => $e->getMessage()
     ]);
 }
 ?>

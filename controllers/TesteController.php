@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../models/TesteAntidoping.php';
 
 class TesteController
@@ -20,15 +19,15 @@ class TesteController
             $testes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                'success' => true,
-                'data' => $testes,
+                'sucesso' => true,
+                'dados' => $testes,
                 'total' => count($testes)
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao listar testes: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao listar testes: ' . $e->getMessage()
             ]);
         }
     }
@@ -40,21 +39,21 @@ class TesteController
 
             if ($teste) {
                 echo json_encode([
-                    'success' => true,
-                    'data' => $teste
+                    'sucesso' => true,
+                    'dados' => $teste
                 ]);
             } else {
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Teste não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Teste não encontrado'
                 ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao buscar teste'
+                'sucesso' => false,
+                'mensagem' => 'Erro ao buscar teste'
             ]);
         }
     }
@@ -62,16 +61,16 @@ class TesteController
     public function criar()
     {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
-            if (!$input) {
-                $input = $_POST;
+            $entrada = json_decode(file_get_contents('php://input'), true);
+            if (!$entrada) {
+                $entrada = $_POST;
             }
 
             $camposObrigatorios = ['atleta_id', 'data_coleta', 'tipo_teste', 'laboratorio_id'];
             $camposFaltantes = [];
 
             foreach ($camposObrigatorios as $campo) {
-                if (empty($input[$campo])) {
+                if (empty($entrada[$campo])) {
                     $camposFaltantes[] = $campo;
                 }
             }
@@ -79,42 +78,42 @@ class TesteController
             if (!empty($camposFaltantes)) {
                 http_response_code(400);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Dados obrigatórios não informados: ' . implode(', ', $camposFaltantes)
+                    'sucesso' => false,
+                    'mensagem' => 'Dados obrigatórios não informados: ' . implode(', ', $camposFaltantes)
                 ]);
                 return;
             }
 
-            // CORREÇÃO: Mapeamento correto dos campos
-            $this->teste->atleta_id = $input['atleta_id'];
-            $this->teste->data_coleta = $input['data_coleta'];
-            $this->teste->hora_coleta = $input['hora_coleta'] ?? null;
-            $this->teste->tipo_teste = $input['tipo_teste'];
-            $this->teste->laboratorio_id = $input['laboratorio_id'];
-            $this->teste->resultado = $input['resultado'] ?? 'pendente';
-            $this->teste->substancia_detectada = $input['substancia_detectada'] ?? null;
-            $this->teste->nivel_substancia = $input['nivel_substancia'] ?? null;
-            $this->teste->data_resultado = $input['data_resultado'] ?? null;
-            $this->teste->observacoes = $input['observacoes'] ?? null;
+            // Mapeamento correto dos campos
+            $this->teste->atleta_id = $entrada['atleta_id'];
+            $this->teste->data_coleta = $entrada['data_coleta'];
+            $this->teste->hora_coleta = $entrada['hora_coleta'] ?? null;
+            $this->teste->tipo_teste = $entrada['tipo_teste'];
+            $this->teste->laboratorio_id = $entrada['laboratorio_id'];
+            $this->teste->resultado = $entrada['resultado'] ?? 'pendente';
+            $this->teste->substancia_detectada = $entrada['substancia_detectada'] ?? null;
+            $this->teste->nivel_substancia = $entrada['nivel_substancia'] ?? null;
+            $this->teste->data_resultado = $entrada['data_resultado'] ?? null;
+            $this->teste->observacoes = $entrada['observacoes'] ?? null;
 
             if ($this->teste->criar()) {
                 echo json_encode([
-                    'success' => true,
-                    'message' => 'Teste cadastrado com sucesso',
+                    'sucesso' => true,
+                    'mensagem' => 'Teste cadastrado com sucesso',
                     'id' => $this->teste->id
                 ]);
             } else {
                 http_response_code(500);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Erro ao cadastrar teste'
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao cadastrar teste'
                 ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao processar requisição: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao processar requisição: ' . $e->getMessage()
             ]);
         }
     }
@@ -122,59 +121,59 @@ class TesteController
     public function atualizar($id)
     {
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
-            if (!$input) {
-                $input = $_POST;
+            $entrada = json_decode(file_get_contents('php://input'), true);
+            if (!$entrada) {
+                $entrada = $_POST;
             }
 
             $testeExistente = $this->teste->buscarPorId($id);
             if (!$testeExistente) {
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Teste não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Teste não encontrado'
                 ]);
                 return;
             }
 
             // Se resultado foi alterado e não é mais "pendente", definir data_resultado
-            if (isset($input['resultado']) && $input['resultado'] !== 'pendente' && $testeExistente['resultado'] === 'pendente') {
-                $input['data_resultado'] = date('Y-m-d');
+            if (isset($entrada['resultado']) && $entrada['resultado'] !== 'pendente' && $testeExistente['resultado'] === 'pendente') {
+                $entrada['data_resultado'] = date('Y-m-d');
             }
 
             // Atribuir valores
             $this->teste->id = $id;
-            $this->teste->atleta_id = $input['atleta_id'] ?? $testeExistente['atleta_id'];
-            $this->teste->data_coleta = $input['data_coleta'] ?? $testeExistente['data_coleta'];
-            $this->teste->hora_coleta = $input['hora_coleta'] ?? $testeExistente['hora_coleta'];
-            $this->teste->tipo_teste = $input['tipo_teste'] ?? $testeExistente['tipo_teste'];
-            $this->teste->laboratorio_id = $input['laboratorio_id'] ?? $testeExistente['laboratorio_id'];
-            $this->teste->resultado = $input['resultado'] ?? $testeExistente['resultado'];
-            $this->teste->substancia_detectada = $input['substancia_detectada'] ?? $testeExistente['substancia_detectada'];
-            $this->teste->nivel_substancia = $input['nivel_substancia'] ?? $testeExistente['nivel_substancia'];
-            $this->teste->data_resultado = $input['data_resultado'] ?? $testeExistente['data_resultado'];
-            $this->teste->observacoes = $input['observacoes'] ?? $testeExistente['observacoes'];
+            $this->teste->atleta_id = $entrada['atleta_id'] ?? $testeExistente['atleta_id'];
+            $this->teste->data_coleta = $entrada['data_coleta'] ?? $testeExistente['data_coleta'];
+            $this->teste->hora_coleta = $entrada['hora_coleta'] ?? $testeExistente['hora_coleta'];
+            $this->teste->tipo_teste = $entrada['tipo_teste'] ?? $testeExistente['tipo_teste'];
+            $this->teste->laboratorio_id = $entrada['laboratorio_id'] ?? $testeExistente['laboratorio_id'];
+            $this->teste->resultado = $entrada['resultado'] ?? $testeExistente['resultado'];
+            $this->teste->substancia_detectada = $entrada['substancia_detectada'] ?? $testeExistente['substancia_detectada'];
+            $this->teste->nivel_substancia = $entrada['nivel_substancia'] ?? $testeExistente['nivel_substancia'];
+            $this->teste->data_resultado = $entrada['data_resultado'] ?? $testeExistente['data_resultado'];
+            $this->teste->observacoes = $entrada['observacoes'] ?? $testeExistente['observacoes'];
 
             error_log("Atualizando teste ID: $id com resultado: " . $this->teste->resultado);
 
             if ($this->teste->atualizar()) {
                 echo json_encode([
-                    'success' => true,
-                    'message' => 'Teste atualizado com sucesso'
+                    'sucesso' => true,
+                    'mensagem' => 'Teste atualizado com sucesso'
                 ]);
             } else {
                 http_response_code(500);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Erro ao atualizar teste'
+                    'sucesso' => false,
+                    'mensagem' => 'Erro ao atualizar teste'
                 ]);
             }
         } catch (Exception $e) {
             error_log("Erro ao atualizar teste: " . $e->getMessage());
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao processar requisição: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao processar requisição: ' . $e->getMessage()
             ]);
         }
     }
@@ -186,15 +185,15 @@ class TesteController
             $testes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                'success' => true,
-                'data' => $testes,
+                'sucesso' => true,
+                'dados' => $testes,
                 'total' => count($testes)
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao listar testes do atleta: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao listar testes do atleta: ' . $e->getMessage()
             ]);
         }
     }
@@ -205,14 +204,14 @@ class TesteController
             $dashboard = $this->teste->obterDadosDashboard();
 
             echo json_encode([
-                'success' => true,
-                'data' => $dashboard
+                'sucesso' => true,
+                'dados' => $dashboard
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao carregar dashboard: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao carregar dashboard: ' . $e->getMessage()
             ]);
         }
     }
@@ -224,15 +223,16 @@ class TesteController
             $relatorio = $this->teste->gerarRelatorio($filtros);
 
             echo json_encode([
-                'success' => true,
-                'data' => $relatorio
+                'sucesso' => true,
+                'dados' => $relatorio
             ]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao gerar relatório: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao gerar relatório: ' . $e->getMessage()
             ]);
         }
     }
 }
+?>

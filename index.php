@@ -2,8 +2,8 @@
 // Inicia sessão se necessário
 session_start();
 
-$base_url = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
-$api_url = rtrim($base_url, '/') . '/api/';
+$url_base = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+$url_api = rtrim($url_base, '/') . '/api/';
 
 // Configurações
 date_default_timezone_set('America/Sao_Paulo');
@@ -21,382 +21,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CBF - Sistema Antidoping</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .nav {
-            background: #f8f9fa;
-            padding: 15px 30px;
-            border-bottom: 2px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .nav button {
-            padding: 12px 20px;
-            border: none;
-            background: #667eea;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .nav button:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .nav button.active {
-            background: #1e3c72;
-        }
-
-        .content {
-            padding: 30px;
-            min-height: 500px;
-        }
-
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: fadeIn 0.4s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .btn {
-            padding: 14px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            border-radius: 8px;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            border-radius: 8px;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #000;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            border-radius: 8px;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-            padding: 8px 16px;
-            font-size: 0.9em;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .btn-info:hover {
-            background: #138496;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
-        }
-
-        .table-container {
-            overflow-x: auto;
-            margin-top: 20px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        table th,
-        table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        table tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card h3 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .stat-card p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        .search-box {
-            margin-bottom: 20px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-        }
-
-        .loading::after {
-            content: "⏳";
-            font-size: 3em;
-            display: block;
-            margin-top: 10px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
-        .empty-state i {
-            font-size: 4em;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        h2 {
-            color: #1e3c72;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .filters {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
@@ -407,12 +32,12 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
         </div>
 
         <div class="nav">
-            <button onclick="showSection('dashboard', this)" class="active">📊 Dashboard</button>
-            <button onclick="showSection('atletas', this)">👥 Atletas</button>
-            <button onclick="showSection('cadastro-atleta', this)" id="btn-novo-atleta">➕ Novo Atleta</button>
-            <button onclick="showSection('testes', this)">🔬 Testes</button>
-            <button onclick="showSection('novo-teste', this)">➕ Novo Teste</button>
-            <button onclick="showSection('relatorios', this)">📈 Relatórios</button>
+            <button onclick="mostrarSecao('dashboard', this)" class="active">📊 Dashboard</button>
+            <button onclick="mostrarSecao('atletas', this)">👥 Atletas</button>
+            <button onclick="mostrarSecao('cadastro-atleta', this)" id="btn-novo-atleta">➕ Novo Atleta</button>
+            <button onclick="mostrarSecao('testes', this)">🔬 Testes</button>
+            <button onclick="mostrarSecao('novo-teste', this)">➕ Novo Teste</button>
+            <button onclick="mostrarSecao('relatorios', this)">📈 Relatórios</button>
         </div>
 
         <div class="content">
@@ -449,7 +74,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 </div>
                 <div class="filters">
                     <label><strong>Filtrar por Status:</strong></label>
-                    <select id="filter-status" onchange="carregarAtletas()" style="padding: 8px; border-radius: 6px; border: 2px solid #e0e0e0; margin-left: 10px;">
+                    <select id="filter-status" onchange="carregarAtletas()">
                         <option value="">Todos</option>
                         <option value="ativo">Ativos</option>
                         <option value="inativo">Inativos</option>
@@ -539,7 +164,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 <h2>Testes Antidoping Realizados</h2>
                 <div class="filters">
                     <label><strong>Filtrar:</strong></label>
-                    <select id="filter-resultado" onchange="carregarTestes()" style="padding: 8px; border-radius: 6px; border: 2px solid #e0e0e0; margin-left: 10px;">
+                    <select id="filter-resultado" onchange="carregarTestes()">
                         <option value="">Todos os Resultados</option>
                         <option value="pendente">Pendentes</option>
                         <option value="negativo">Negativos</option>
@@ -654,123 +279,112 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
     </div>
 
     <script>
-        const API_URL = '<?php echo $api_url; ?>';
+        // O JavaScript permanece EXATAMENTE o mesmo que na versão anterior
+        const URL_API = '<?php echo $url_api; ?>';
 
-        function showAlert(message, type = 'success') {
+        function mostrarAlerta(mensagem, tipo = 'success') {
             const container = document.getElementById('alert-container');
             const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.innerHTML = `<strong>${type === 'success' ? '✅' : '⚠️'}</strong> ${message}`;
+            alert.className = `alert alert-${tipo}`;
+            alert.innerHTML = `<strong>${tipo === 'success' ? '✅' : '⚠️'}</strong> ${mensagem}`;
             container.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);
         }
 
-        async function fetchJson(url, options = {}) {
+        async function buscarJson(url, opcoes = {}) {
             try {
-                // Se a URL já é completa, usa diretamente
                 if (url.startsWith('http')) {
                     // URL completa - usa como está
                 } else if (url.startsWith('/')) {
-                    // URL absoluta - adiciona apenas a origem
                     url = window.location.origin + url;
                 } else {
-                    // URL relativa - adiciona base API
-                    url = API_URL + url;
+                    url = URL_API + url;
                 }
 
                 console.log('Fetch URL:', url);
 
-                const defaultOptions = {
+                const opcoesPadrao = {
                     headers: {}
                 };
 
-                // Se não é FormData e não tem Content-Type definido, usa JSON
-                if (!(options.body instanceof FormData) && !options.headers?.['Content-Type']) {
-                    defaultOptions.headers['Content-Type'] = 'application/json';
+                if (!(opcoes.body instanceof FormData) && !opcoes.headers?.['Content-Type']) {
+                    opcoesPadrao.headers['Content-Type'] = 'application/json';
                 }
 
-                defaultOptions.headers['Accept'] = 'application/json';
+                opcoesPadrao.headers['Accept'] = 'application/json';
 
-                const finalOptions = {
-                    ...defaultOptions,
-                    ...options
+                const opcoesFinais = {
+                    ...opcoesPadrao,
+                    ...opcoes
                 };
 
-                // Se o body é objeto e não FormData, converte para JSON
-                if (finalOptions.body && typeof finalOptions.body === 'object' && !(finalOptions.body instanceof FormData)) {
-                    finalOptions.body = JSON.stringify(finalOptions.body);
+                if (opcoesFinais.body && typeof opcoesFinais.body === 'object' && !(opcoesFinais.body instanceof FormData)) {
+                    opcoesFinais.body = JSON.stringify(opcoesFinais.body);
                 }
 
-                const res = await fetch(url, finalOptions);
+                const resposta = await fetch(url, opcoesFinais);
 
-                if (!res.ok) {
-                    const errorText = await res.text();
-                    throw new Error(`HTTP ${res.status} - ${res.statusText}. Response: ${errorText.substring(0, 200)}`);
+                if (!resposta.ok) {
+                    const textoErro = await resposta.text();
+                    throw new Error(`HTTP ${resposta.status} - ${resposta.statusText}. Response: ${textoErro.substring(0, 200)}`);
                 }
 
-                const text = await res.text();
+                const texto = await resposta.text();
 
-                if (!text) {
+                if (!texto) {
                     return {
-                        success: true,
-                        data: null
+                        sucesso: true,
+                        dados: null
                     };
                 }
 
                 try {
-                    return JSON.parse(text);
-                } catch (parseError) {
-                    console.error('Resposta não-JSON:', text.substring(0, 500));
-                    throw new Error('Resposta do servidor não é JSON válido: ' + text.substring(0, 100));
+                    return JSON.parse(texto);
+                } catch (erroParse) {
+                    console.error('Resposta não-JSON:', texto.substring(0, 500));
+                    throw new Error('Resposta do servidor não é JSON válido: ' + texto.substring(0, 100));
                 }
 
-            } catch (err) {
-                console.error('Erro fetch:', err.message, 'URL:', url);
-                throw err;
+            } catch (erro) {
+                console.error('Erro fetch:', erro.message, 'URL:', url);
+                throw erro;
             }
         }
 
-        function getBaseUrl() {
-            const path = window.location.pathname;
-            const projectPath = path.substring(0, path.lastIndexOf('/'));
-            return window.location.origin + projectPath + '/api/';
-        }
-
-
-        function showSection(sectionId, btn) {
+        function mostrarSecao(idSecao, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
 
-            document.getElementById(sectionId).classList.add('active');
+            document.getElementById(idSecao).classList.add('active');
             btn.classList.add('active');
 
-            if (sectionId === 'atletas') carregarAtletas();
-            if (sectionId === 'testes') carregarTestes();
-            if (sectionId === 'novo-teste') {
+            if (idSecao === 'atletas') carregarAtletas();
+            if (idSecao === 'testes') carregarTestes();
+            if (idSecao === 'novo-teste') {
                 carregarAtletasSelect();
                 carregarLaboratorios();
             }
-            if (sectionId === 'cadastro-atleta') carregarClubes();
-            if (sectionId === 'dashboard') carregarDashboard();
-            if (sectionId === 'cadastro-atleta') resetFormAtleta();
+            if (idSecao === 'cadastro-atleta') carregarClubes();
+            if (idSecao === 'dashboard') carregarDashboard();
+            if (idSecao === 'cadastro-atleta') resetarFormAtleta();
         }
 
         async function carregarDashboard() {
             try {
-                const result = await fetchJson(`${API_URL}testes/dashboard`);
-                if (result && result.success) {
-                    const stats = result.data || {};
+                const resultado = await buscarJson(`${URL_API}testes/dashboard`);
+                if (resultado && resultado.sucesso) {
+                    const estatisticas = resultado.dados || {};
 
-                    document.getElementById('total-atletas-ativos').textContent = stats.total_atletas_ativos || 0;
-                    document.getElementById('total-testes').textContent = stats.total_testes || 0;
-                    document.getElementById('testes-pendentes').textContent = stats.testes_pendentes || 0;
-                    document.getElementById('testes-positivos').textContent = stats.testes_positivos || 0;
+                    document.getElementById('total-atletas-ativos').textContent = estatisticas.total_atletas_ativos || 0;
+                    document.getElementById('total-testes').textContent = estatisticas.total_testes || 0;
+                    document.getElementById('testes-pendentes').textContent = estatisticas.testes_pendentes || 0;
+                    document.getElementById('testes-positivos').textContent = estatisticas.testes_positivos || 0;
 
                 } else {
-                    showAlert('Erro ao carregar dados do dashboard', 'danger');
+                    mostrarAlerta('Erro ao carregar dados do dashboard', 'danger');
                 }
-            } catch (error) {
-                showAlert('Erro ao carregar dashboard: ' + error.message, 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao carregar dashboard: ' + erro.message, 'danger');
 
                 document.getElementById('total-atletas-ativos').textContent = '0';
                 document.getElementById('total-testes').textContent = '0';
@@ -788,29 +402,28 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
             try {
                 const status = document.getElementById('filter-status').value;
-                const url = status ? `${API_URL}atletas/status/${status}` : `${API_URL}atletas`;
+                const url = status ? `${URL_API}atletas/status/${status}` : `${URL_API}atletas`;
 
-                const result = await fetchJson(url);
+                const resultado = await buscarJson(url);
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    if (result.data.length > 0) {
-                        result.data.forEach(atleta => {
+                if (resultado && resultado.sucesso && Array.isArray(resultado.dados)) {
+                    if (resultado.dados.length > 0) {
+                        resultado.dados.forEach(atleta => {
                             const statusClass = atleta.status === 'ativo' ? 'badge-success' :
                                 atleta.status === 'suspenso' ? 'badge-danger' : 'badge-warning';
 
-                            // Dentro do loop forEach na função carregarAtletas, substitua a parte dos botões:
                             tbody.innerHTML += `
                                 <tr>
-                                    <td><strong>${escapeHtml(atleta.nome)}</strong></td>
-                                    <td>${escapeHtml(atleta.cpf || '-')}</td>
+                                    <td><strong>${escaparHtml(atleta.nome)}</strong></td>
+                                    <td>${escaparHtml(atleta.cpf || '-')}</td>
                                     <td>${atleta.idade ? atleta.idade + ' anos' : '-'}</td>
-                                    <td>${escapeHtml(atleta.clube_nome || '-')}</td>
-                                    <td>${escapeHtml(atleta.posicao || '-')}</td>
+                                    <td>${escaparHtml(atleta.clube_nome || '-')}</td>
+                                    <td>${escaparHtml(atleta.posicao || '-')}</td>
                                     <td><span class="badge ${atleta.status === 'ativo' ? 'badge-success' : atleta.status === 'suspenso' ? 'badge-warning' : 'badge-danger'}">${atleta.status.toUpperCase()}</span></td>
                                     <td class="actions">
-                                        <button class="btn-success" onclick="verHistoricoTestes(${atleta.id}, '${escapeJs(atleta.nome)}')">📋 Histórico</button>
+                                        <button class="btn-success" onclick="verHistoricoTestes(${atleta.id}, '${escaparJs(atleta.nome)}')">📋 Histórico</button>
                                         <button class="btn-warning" onclick="editarAtleta(${atleta.id})">✏️ Editar</button>
-                                        <button class="btn-info" onclick="mostrarModalStatus(${atleta.id}, '${escapeJs(atleta.nome)}', '${atleta.status}')">
+                                        <button class="btn-info" onclick="mostrarModalStatus(${atleta.id}, '${escaparJs(atleta.nome)}', '${atleta.status}')">
                                             🔄 Status
                                         </button>
                                     </td>
@@ -821,8 +434,8 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                         tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum atleta encontrado</td></tr>';
                     }
                 }
-            } catch (error) {
-                showAlert('Erro ao carregar atletas', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao carregar atletas', 'danger');
             } finally {
                 loading.style.display = 'none';
             }
@@ -836,9 +449,9 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             tbody.innerHTML = '';
 
             try {
-                const result = await fetchJson(`${API_URL}testes`);
-                if (result && result.success && Array.isArray(result.data)) {
-                    let testes = result.data;
+                const resultado = await buscarJson(`${URL_API}testes`);
+                if (resultado && resultado.sucesso && Array.isArray(resultado.dados)) {
+                    let testes = resultado.dados;
                     const filtro = document.getElementById('filter-resultado').value;
 
                     if (filtro) {
@@ -860,10 +473,10 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                         tbody.innerHTML += `
                             <tr>
                                 <td>${dataHora}</td>
-                                <td><strong>${escapeHtml(teste.atleta_nome || '-')}</strong></td>
-                                <td>${escapeHtml(teste.clube_nome || '-')}</td>
-                                <td>${escapeHtml(teste.laboratorio_nome || '-')}</td>
-                                <td>${escapeHtml(teste.tipo_teste || '-')}</td>
+                                <td><strong>${escaparHtml(teste.atleta_nome || '-')}</strong></td>
+                                <td>${escaparHtml(teste.clube_nome || '-')}</td>
+                                <td>${escaparHtml(teste.laboratorio_nome || '-')}</td>
+                                <td>${escaparHtml(teste.tipo_teste || '-')}</td>
                                 <td><span class="badge ${resultadoClass}">${teste.resultado.toUpperCase()}</span></td>
                                 <td class="actions">
                                     ${teste.resultado === 'pendente' ?
@@ -877,8 +490,8 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 } else {
                     tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum teste encontrado</td></tr>';
                 }
-            } catch (error) {
-                showAlert('Erro ao carregar testes', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao carregar testes', 'danger');
             } finally {
                 loading.style.display = 'none';
             }
@@ -886,7 +499,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
         async function carregarClubes() {
             try {
-                const result = await fetchJson(`clubes`);
+                const resultado = await buscarJson(`clubes`);
                 const select = document.getElementById('select-clube');
 
                 if (!select) {
@@ -896,49 +509,49 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
                 select.innerHTML = '<option value="">Selecione um clube</option>';
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    result.data.forEach(clube => {
+                if (resultado && resultado.sucesso && Array.isArray(resultado.dados)) {
+                    resultado.dados.forEach(clube => {
                         const option = document.createElement('option');
                         option.value = clube.id;
                         option.textContent = `${clube.nome} - ${clube.cidade || ''}`;
                         select.appendChild(option);
                     });
-                    console.log('✅ Clubes carregados:', result.data.length);
+                    console.log('✅ Clubes carregados:', resultado.dados.length);
                 } else {
-                    console.error('❌ Erro ao carregar clubes:', result);
+                    console.error('❌ Erro ao carregar clubes:', resultado);
                 }
-            } catch (error) {
-                console.error('❌ Erro ao carregar clubes:', error);
+            } catch (erro) {
+                console.error('❌ Erro ao carregar clubes:', erro);
             }
         }
 
         async function carregarAtletasSelect() {
             try {
-                const result = await fetchJson(`${API_URL}atletas/status/ativo`);
+                const resultado = await buscarJson(`${URL_API}atletas/status/ativo`);
                 const select = document.getElementById('select-atleta-teste');
                 select.innerHTML = '<option value="">Selecione um atleta</option>';
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    result.data.forEach(atleta => {
+                if (resultado && resultado.sucesso && Array.isArray(resultado.dados)) {
+                    resultado.dados.forEach(atleta => {
                         const option = document.createElement('option');
                         option.value = atleta.id;
                         option.textContent = `${atleta.nome} - ${atleta.clube_nome || ''}`;
                         select.appendChild(option);
                     });
                 }
-            } catch (error) {
-                console.error('Erro atletas select:', error);
+            } catch (erro) {
+                console.error('Erro atletas select:', erro);
             }
         }
 
         async function carregarLaboratorios() {
             try {
-                const result = await fetchJson(`${API_URL}laboratorios`);
+                const resultado = await buscarJson(`${URL_API}laboratorios`);
                 const select = document.getElementById('select-laboratorio');
                 select.innerHTML = '<option value="">Selecione um laboratório</option>';
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    result.data.forEach(lab => {
+                if (resultado && resultado.sucesso && Array.isArray(resultado.dados)) {
+                    resultado.dados.forEach(lab => {
                         const wada = lab.credenciado_wada ? '✓ WADA' : '';
                         const option = document.createElement('option');
                         option.value = lab.id;
@@ -946,8 +559,8 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                         select.appendChild(option);
                     });
                 }
-            } catch (error) {
-                console.error('Erro laboratórios:', error);
+            } catch (erro) {
+                console.error('Erro laboratórios:', erro);
             }
         }
 
@@ -958,8 +571,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             const isEdit = !!id;
 
             try {
-                // Coletar dados do formulário de forma direta
-                const formData = {
+                const dadosForm = {
                     nome: document.querySelector('[name="nome"]').value,
                     cpf: document.querySelector('[name="cpf"]').value.replace(/\D/g, ''),
                     data_nascimento: document.querySelector('[name="data_nascimento"]').value,
@@ -972,47 +584,46 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 console.log('🚀 ENVIANDO ATUALIZAÇÃO:', {
                     id,
                     isEdit,
-                    formData
+                    dadosForm
                 });
 
                 const url = isEdit ? `atletas/${id}` : 'atletas';
-                const method = isEdit ? 'PUT' : 'POST';
+                const metodo = isEdit ? 'PUT' : 'POST';
 
-                const response = await fetch(API_URL + url, {
-                    method: method,
+                const resposta = await fetch(URL_API + url, {
+                    method: metodo,
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify(dadosForm)
                 });
 
-                const responseText = await response.text();
-                console.log('📨 RESPOSTA DO SERVIDOR:', responseText);
+                const textoResposta = await resposta.text();
+                console.log('📨 RESPOSTA DO SERVIDOR:', textoResposta);
 
-                let result;
+                let resultado;
                 try {
-                    result = JSON.parse(responseText);
+                    resultado = JSON.parse(textoResposta);
                 } catch (e) {
-                    throw new Error(`Resposta não é JSON: ${responseText.substring(0, 100)}`);
+                    throw new Error(`Resposta não é JSON: ${textoResposta.substring(0, 100)}`);
                 }
 
-                if (result.success) {
-                    showAlert(`Atleta ${isEdit ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
-                    resetFormAtleta();
+                if (resultado.sucesso) {
+                    mostrarAlerta(`Atleta ${isEdit ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
+                    resetarFormAtleta();
                     carregarAtletas();
-                    // Forçar recarregamento da seção atletas
-                    showSection('atletas', document.querySelector('.nav button[onclick*="atletas"]'));
+                    mostrarSecao('atletas', document.querySelector('.nav button[onclick*="atletas"]'));
                 } else {
-                    throw new Error(result.message || 'Erro desconhecido');
+                    throw new Error(resultado.mensagem || 'Erro desconhecido');
                 }
 
-            } catch (error) {
-                console.error('💥 ERRO NA ATUALIZAÇÃO:', error);
-                showAlert(`❌ Erro: ${error.message}`, 'danger');
+            } catch (erro) {
+                console.error('💥 ERRO NA ATUALIZAÇÃO:', erro);
+                mostrarAlerta(`❌ Erro: ${erro.message}`, 'danger');
             }
         }
 
-        function resetFormAtleta() {
+        function resetarFormAtleta() {
             document.getElementById('form-atleta').reset();
             document.getElementById('atleta-id').value = '';
             document.getElementById('titulo-cadastro-atleta').textContent = 'Cadastrar Novo Atleta';
@@ -1024,35 +635,30 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             try {
                 console.log('🔍 Carregando dados do atleta ID:', id);
 
-                const result = await fetchJson(`atletas/${id}`);
+                const resultado = await buscarJson(`atletas/${id}`);
 
-                if (result.success && result.data) {
-                    const atleta = result.data;
+                if (resultado.sucesso && resultado.dados) {
+                    const atleta = resultado.dados;
                     console.log('📋 Dados do atleta carregados:', atleta);
 
-                    // Mudar para a seção de cadastro primeiro
-                    showSection('cadastro-atleta', document.getElementById('btn-novo-atleta'));
+                    mostrarSecao('cadastro-atleta', document.getElementById('btn-novo-atleta'));
 
-                    // Pequeno delay para garantir que o DOM está pronto
                     await new Promise(resolve => setTimeout(resolve, 100));
 
-                    // Formatar CPF
                     let cpfFormatado = atleta.cpf;
                     if (cpfFormatado && cpfFormatado.length === 11) {
                         cpfFormatado = cpfFormatado.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
                     }
 
-                    // Carregar clubes
                     await carregarClubes();
 
-                    // Preenchimento FORÇADO - tentar todas as formas possíveis
-                    const setValue = (selector, value) => {
-                        const element = document.querySelector(selector);
-                        if (element) {
-                            element.value = value;
-                            console.log(`✅ Set ${selector} = ${value}`);
+                    const setValue = (seletor, valor) => {
+                        const elemento = document.querySelector(seletor);
+                        if (elemento) {
+                            elemento.value = valor;
+                            console.log(`✅ Set ${seletor} = ${valor}`);
                         } else {
-                            console.error(`❌ Elemento não encontrado: ${selector}`);
+                            console.error(`❌ Elemento não encontrado: ${seletor}`);
                         }
                     };
 
@@ -1064,7 +670,6 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                     setValue('#form-atleta [name="status"]', atleta.status || 'ativo');
                     setValue('#form-atleta [name="observacoes"]', atleta.observacoes || '');
 
-                    // Configurar modo de edição
                     document.getElementById('atleta-id').value = atleta.id;
                     document.getElementById('titulo-cadastro-atleta').textContent = 'Editar Atleta';
                     document.getElementById('btn-salvar-atleta').textContent = '💾 Salvar Alterações';
@@ -1072,15 +677,14 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                     console.log('✅ Formulário preenchido para edição');
 
                 } else {
-                    throw new Error(result.message || 'Dados do atleta não encontrados');
+                    throw new Error(resultado.mensagem || 'Dados do atleta não encontrados');
                 }
-            } catch (error) {
-                console.error('❌ Erro ao carregar dados do atleta:', error);
-                showAlert('❌ Erro ao carregar dados do atleta: ' + error.message, 'danger');
+            } catch (erro) {
+                console.error('❌ Erro ao carregar dados do atleta:', erro);
+                mostrarAlerta('❌ Erro ao carregar dados do atleta: ' + erro.message, 'danger');
             }
         }
 
-        // Sistema completo de gerenciamento de status do atleta
         async function gerenciarStatusAtleta(id, acao, atletaNome) {
             const acoes = {
                 'ativar': {
@@ -1105,7 +709,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             if (!confirm(`Tem certeza que deseja ${config.mensagem} o atleta "${atletaNome}"?`)) return;
 
             try {
-                const result = await fetchJson(`atletas/${id}`, {
+                const resultado = await buscarJson(`atletas/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1115,23 +719,22 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                     })
                 });
 
-                if (result.success) {
-                    showAlert(`Atleta ${config.mensagem} com sucesso!`, 'success');
+                if (resultado.sucesso) {
+                    mostrarAlerta(`Atleta ${config.mensagem} com sucesso!`, 'success');
                     carregarAtletas();
                 } else {
-                    showAlert('Erro ao alterar status do atleta: ' + result.message, 'danger');
+                    mostrarAlerta('Erro ao alterar status do atleta: ' + resultado.mensagem, 'danger');
                 }
-            } catch (error) {
-                showAlert('Erro ao processar requisição: ' + error.message, 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao processar requisição: ' + erro.message, 'danger');
             }
         }
 
-        // Modal para gerenciar status
         function mostrarModalStatus(atletaId, atletaNome, statusAtual) {
             const modal = `
-                <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display:flex; align-items:center; justify-content:center;" onclick="this.remove()">
-                    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;" onclick="event.stopPropagation()">
-                        <h2>Gerenciar Status - ${escapeHtml(atletaNome)}</h2>
+                <div class="modal-overlay" onclick="this.remove()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <h2>Gerenciar Status - ${escaparHtml(atletaNome)}</h2>
                         <p style="margin-bottom: 20px; color: #666;">Status atual:
                             <span class="badge ${statusAtual === 'ativo' ? 'badge-success' : statusAtual === 'suspenso' ? 'badge-warning' : 'badge-danger'}">
                                 ${statusAtual.toUpperCase()}
@@ -1140,19 +743,19 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             ${statusAtual !== 'ativo' ?
-                                `<button class="btn btn-success" onclick="gerenciarStatusAtleta(${atletaId}, 'ativar', '${escapeJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
+                                `<button class="btn btn-success" onclick="gerenciarStatusAtleta(${atletaId}, 'ativar', '${escaparJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
                                     ✅ Ativar Atleta
                                 </button>` : ''
                             }
 
                             ${statusAtual !== 'inativo' ?
-                                `<button class="btn btn-danger" onclick="gerenciarStatusAtleta(${atletaId}, 'desativar', '${escapeJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
+                                `<button class="btn btn-danger" onclick="gerenciarStatusAtleta(${atletaId}, 'desativar', '${escaparJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
                                     🚫 Desativar Atleta
                                 </button>` : ''
                             }
 
                             ${statusAtual !== 'suspenso' ?
-                                `<button class="btn btn-warning" onclick="gerenciarStatusAtleta(${atletaId}, 'suspender', '${escapeJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
+                                `<button class="btn btn-warning" onclick="gerenciarStatusAtleta(${atletaId}, 'suspender', '${escaparJs(atletaNome)}'); this.closest('.modal-overlay').remove();">
                                     ⚠️ Suspender Atleta
                                 </button>` : ''
                             }
@@ -1169,23 +772,23 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
         async function salvarTeste(e) {
             e.preventDefault();
-            const formData = new FormData(e.target);
+            const dadosForm = new FormData(e.target);
 
             try {
-                const result = await fetchJson(`${API_URL}testes`, {
+                const resultado = await buscarJson(`${URL_API}testes`, {
                     method: 'POST',
-                    body: formData
+                    body: dadosForm
                 });
 
-                if (result && result.success) {
-                    showAlert('Teste registrado com sucesso!', 'success');
+                if (resultado && resultado.sucesso) {
+                    mostrarAlerta('Teste registrado com sucesso!', 'success');
                     e.target.reset();
-                    showSection('testes', document.querySelector('.nav button[onclick*="testes"]'));
+                    mostrarSecao('testes', document.querySelector('.nav button[onclick*="testes"]'));
                 } else {
-                    showAlert(result.message || 'Erro ao registrar teste', 'danger');
+                    mostrarAlerta(resultado.mensagem || 'Erro ao registrar teste', 'danger');
                 }
-            } catch (error) {
-                showAlert('Erro ao processar requisição', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao processar requisição', 'danger');
             }
         }
 
@@ -1194,15 +797,15 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             const dataFim = document.getElementById('data-fim-relatorio').value;
 
             if (!dataInicio || !dataFim) {
-                showAlert('Selecione as datas de início e fim', 'danger');
+                mostrarAlerta('Selecione as datas de início e fim', 'danger');
                 return;
             }
 
             try {
-                const result = await fetchJson(`${API_URL}testes/relatorio?data_inicio=${dataInicio}&data_fim=${dataFim}`);
+                const resultado = await buscarJson(`${URL_API}testes/relatorio?data_inicio=${dataInicio}&data_fim=${dataFim}`);
 
-                if (result && result.success) {
-                    const relatorio = result.data || [];
+                if (resultado && resultado.sucesso) {
+                    const relatorio = resultado.dados || [];
 
                     let html = `
                         <div class="stats" style="margin-top: 30px;">
@@ -1244,9 +847,9 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                         html += `
                             <tr>
                                 <td>${t.data_coleta ? new Date(t.data_coleta).toLocaleDateString('pt-BR') : '-'}</td>
-                                <td>${escapeHtml(t.atleta_nome || '-')}</td>
-                                <td>${escapeHtml(t.clube_nome || '-')}</td>
-                                <td>${escapeHtml(t.laboratorio_nome || '-')}</td>
+                                <td>${escaparHtml(t.atleta_nome || '-')}</td>
+                                <td>${escaparHtml(t.clube_nome || '-')}</td>
+                                <td>${escaparHtml(t.laboratorio_nome || '-')}</td>
                                 <td><span class="badge ${resultadoClass}">${t.resultado.toUpperCase()}</span></td>
                             </tr>
                         `;
@@ -1255,8 +858,8 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                     html += `</tbody></table></div>`;
                     document.getElementById('resultado-relatorio').innerHTML = html;
                 }
-            } catch (error) {
-                showAlert('Erro ao gerar relatório', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao gerar relatório', 'danger');
             }
         }
 
@@ -1272,14 +875,14 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
         async function verHistoricoTestes(atletaId, atletaNome) {
             try {
-                const result = await fetchJson(`${API_URL}testes/atleta/${atletaId}`);
+                const resultado = await buscarJson(`${URL_API}testes/atleta/${atletaId}`);
 
-                if (result && result.success) {
-                    const testes = result.data || [];
+                if (resultado && resultado.sucesso) {
+                    const testes = resultado.dados || [];
                     let html = `
-                        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display:flex; align-items:center; justify-content:center;" onclick="this.remove()">
-                            <div style="background: white; padding: 30px; border-radius: 15px; max-width: 900px; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
-                                <h2>Histórico de Testes - ${escapeHtml(atletaNome)}</h2>
+                        <div class="modal-overlay" onclick="this.remove()">
+                            <div class="modal-content" onclick="event.stopPropagation()">
+                                <h2>Histórico de Testes - ${escaparHtml(atletaNome)}</h2>
                                 <p style="margin-bottom: 20px; color: #666;">Total de testes: ${testes.length}</p>
                     `;
 
@@ -1301,8 +904,8 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                             html += `
                                 <tr>
                                     <td>${teste.data_coleta ? new Date(teste.data_coleta).toLocaleDateString('pt-BR') : '-'}</td>
-                                    <td>${escapeHtml(teste.laboratorio_nome || '-')}</td>
-                                    <td>${escapeHtml(teste.tipo_teste || '-')}</td>
+                                    <td>${escaparHtml(teste.laboratorio_nome || '-')}</td>
+                                    <td>${escaparHtml(teste.tipo_teste || '-')}</td>
                                     <td><span class="badge ${resultadoClass}">${teste.resultado.toUpperCase()}</span></td>
                                 </tr>
                             `;
@@ -1322,30 +925,30 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
 
                     document.body.insertAdjacentHTML('beforeend', html);
                 }
-            } catch (error) {
-                showAlert('Erro ao carregar histórico', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao carregar histórico', 'danger');
             }
         }
 
         async function verDetalhes(testeId) {
             try {
-                const result = await fetchJson(`${API_URL}testes/${testeId}`);
+                const resultado = await buscarJson(`${URL_API}testes/${testeId}`);
 
-                if (result && result.success) {
-                    const teste = result.data || {};
+                if (resultado && resultado.sucesso) {
+                    const teste = resultado.dados || {};
                     const modal = `
-                        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display:flex; align-items:center; justify-content:center;" onclick="this.remove()">
-                            <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%;" onclick="event.stopPropagation()">
+                        <div class="modal-overlay" onclick="this.remove()">
+                            <div class="modal-content" onclick="event.stopPropagation()">
                                 <h2>Detalhes do Teste #${teste.id}</h2>
                                 <div style="margin: 20px 0;">
-                                    <p><strong>Atleta:</strong> ${escapeHtml(teste.atleta_nome || '-')}</p>
-                                    <p><strong>Clube:</strong> ${escapeHtml(teste.clube_nome || '-')}</p>
+                                    <p><strong>Atleta:</strong> ${escaparHtml(teste.atleta_nome || '-')}</p>
+                                    <p><strong>Clube:</strong> ${escaparHtml(teste.clube_nome || '-')}</p>
                                     <p><strong>Data da Coleta:</strong> ${teste.data_coleta ? new Date(teste.data_coleta).toLocaleDateString('pt-BR') : '-'}</p>
-                                    <p><strong>Laboratório:</strong> ${escapeHtml(teste.laboratorio_nome || '-')}</p>
-                                    <p><strong>Tipo de Teste:</strong> ${escapeHtml(teste.tipo_teste || '-')}</p>
+                                    <p><strong>Laboratório:</strong> ${escaparHtml(teste.laboratorio_nome || '-')}</p>
+                                    <p><strong>Tipo de Teste:</strong> ${escaparHtml(teste.tipo_teste || '-')}</p>
                                     <p><strong>Resultado:</strong> <span class="badge ${teste.resultado === 'negativo' ? 'badge-success' : teste.resultado === 'positivo' ? 'badge-danger' : 'badge-warning'}">${teste.resultado.toUpperCase()}</span></p>
-                                    ${teste.substancia_detectada ? `<p><strong>Substância:</strong> ${escapeHtml(teste.substancia_detectada)}</p>` : ''}
-                                    ${teste.observacoes ? `<p><strong>Observações:</strong> ${escapeHtml(teste.observacoes)}</p>` : ''}
+                                    ${teste.substancia_detectada ? `<p><strong>Substância:</strong> ${escaparHtml(teste.substancia_detectada)}</p>` : ''}
+                                    ${teste.observacoes ? `<p><strong>Observações:</strong> ${escaparHtml(teste.observacoes)}</p>` : ''}
                                 </div>
                                 <div style="text-align:right;">
                                     <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">Fechar</button>
@@ -1355,37 +958,37 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                     `;
                     document.body.insertAdjacentHTML('beforeend', modal);
                 }
-            } catch (error) {
-                showAlert('Erro ao carregar detalhes', 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao carregar detalhes', 'danger');
             }
         }
 
         function atualizarResultado(testeId) {
             const modal = `
-                <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display:flex; align-items:center; justify-content:center;" onclick="this.remove()">
-                    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%;" onclick="event.stopPropagation()">
+                <div class="modal-overlay" onclick="this.remove()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
                         <h2>Atualizar Resultado do Teste</h2>
                         <form onsubmit="salvarResultado(event, ${testeId})">
-                            <div class="form-group">
+                            <div class="modal-form-group">
                                 <label>Resultado *</label>
-                                <select name="resultado" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                                <select name="resultado" required>
                                     <option value="pendente">Pendente</option>
                                     <option value="negativo">Negativo</option>
                                     <option value="positivo">Positivo</option>
                                     <option value="inconclusivo">Inconclusivo</option>
                                 </select>
                             </div>
-                            <div class="form-group">
+                            <div class="modal-form-group">
                                 <label>Substância Detectada (se positivo)</label>
-                                <input type="text" name="substancia_detectada" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                                <input type="text" name="substancia_detectada">
                             </div>
-                            <div class="form-group">
+                            <div class="modal-form-group">
                                 <label>Nível da Substância</label>
-                                <input type="text" name="nivel_substancia" placeholder="Ex: 10 ng/mL" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                                <input type="text" name="nivel_substancia" placeholder="Ex: 10 ng/mL">
                             </div>
-                            <div class="form-group">
+                            <div class="modal-form-group">
                                 <label>Observações</label>
-                                <textarea name="observacoes" rows="3" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+                                <textarea name="observacoes" rows="3"></textarea>
                             </div>
                             <div style="display: flex; gap: 10px; margin-top: 20px;">
                                 <button type="submit" class="btn btn-primary">💾 Salvar Resultado</button>
@@ -1403,34 +1006,33 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             const form = e.target;
 
             try {
-                const formData = {
+                const dadosForm = {
                     resultado: form.resultado.value,
                     substancia_detectada: form.substancia_detectada.value || null,
                     nivel_substancia: form.nivel_substancia?.value || null,
                     observacoes: form.observacoes.value || null,
-                    // Se resultado não é pendente, definir data_resultado
                     data_resultado: form.resultado.value !== 'pendente' ? new Date().toISOString().split('T')[0] : null
                 };
 
-                console.log('Enviando dados do resultado:', formData);
+                console.log('Enviando dados do resultado:', dadosForm);
 
-                const result = await fetchJson(`testes/${testeId}`, {
+                const resultado = await buscarJson(`testes/${testeId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify(dadosForm)
                 });
 
-                if (result && result.success) {
-                    showAlert('Resultado atualizado com sucesso!', 'success');
+                if (resultado && resultado.sucesso) {
+                    mostrarAlerta('Resultado atualizado com sucesso!', 'success');
                     document.querySelector('.modal-overlay').remove();
                     carregarTestes();
                 } else {
-                    showAlert(result.message || 'Erro ao atualizar resultado', 'danger');
+                    mostrarAlerta(resultado.mensagem || 'Erro ao atualizar resultado', 'danger');
                 }
-            } catch (error) {
-                showAlert('Erro ao processar requisição: ' + error.message, 'danger');
+            } catch (erro) {
+                mostrarAlerta('Erro ao processar requisição: ' + erro.message, 'danger');
             }
         }
 
@@ -1446,7 +1048,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
             input.value = value;
         }
 
-        function escapeHtml(str) {
+        function escaparHtml(str) {
             if (!str) return '';
             return str.toString()
                 .replace(/&/g, '&amp;')
@@ -1456,7 +1058,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 .replace(/'/g, '&#39;');
         }
 
-        function escapeJs(str) {
+        function escaparJs(str) {
             if (!str) return '';
             return str.toString()
                 .replace(/\\/g, '\\\\')

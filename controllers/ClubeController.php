@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../models/Clube.php';
 
 class ClubeController {
@@ -17,16 +16,16 @@ class ClubeController {
             $clubes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                'success' => true,
-                'data' => $clubes,
+                'sucesso' => true,
+                'dados' => $clubes,
                 'total' => count($clubes)
             ]);
 
         } catch(Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao listar clubes: ' . $e->getMessage()
+                'sucesso' => false,
+                'mensagem' => 'Erro ao listar clubes: ' . $e->getMessage()
             ]);
         }
     }
@@ -37,22 +36,22 @@ class ClubeController {
 
             if($clube) {
                 echo json_encode([
-                    'success' => true,
-                    'data' => $clube
+                    'sucesso' => true,
+                    'dados' => $clube
                 ]);
             } else {
                 http_response_code(404);
                 echo json_encode([
-                    'success' => false,
-                    'message' => 'Clube não encontrado'
+                    'sucesso' => false,
+                    'mensagem' => 'Clube não encontrado'
                 ]);
             }
 
         } catch(Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false,
-                'message' => 'Erro ao buscar clube'
+                'sucesso' => false,
+                'mensagem' => 'Erro ao buscar clube'
             ]);
         }
     }

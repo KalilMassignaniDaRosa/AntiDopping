@@ -1,9 +1,9 @@
 <?php
 class Database {
     private $host = "localhost";
-    private $db_name = "cbf_antidoping";
-    private $username = "root";
-    private $password = "root";
+    private $nome_banco = "cbf_antidoping";
+    private $usuario = "root";
+    private $senha = "root";
     public $conn;
 
     public function getConnection() {
@@ -11,9 +11,9 @@ class Database {
 
         try {
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4",
-                $this->username,
-                $this->password,
+                "mysql:host=" . $this->host . ";dbname=" . $this->nome_banco . ";charset=utf8mb4",
+                $this->usuario,
+                $this->senha,
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

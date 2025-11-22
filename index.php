@@ -164,7 +164,7 @@ if (isset($_GET['api']) || strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
                 <h2>Testes Antidoping Realizados</h2>
                 <div class="filters">
                     <label><strong>Filtrar:</strong></label>
-                    <select id="filter-resultado" onchange="carregarTestes()">
+                    <select id="filter-resultado" class="styled-select" onchange="carregarTestes()">
                         <option value="">Todos os Resultados</option>
                         <option value="pendente">Pendentes</option>
                         <option value="negativo">Negativos</option>
